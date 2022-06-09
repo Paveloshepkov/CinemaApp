@@ -1,0 +1,12 @@
+<resources>
+    <string name="app_name">CinemaApp</string>
+    <string name="genres">Жанры</string>
+    <string name="films">Фильмы</string>
+    <string name="mainFragment">Главная</string>
+    <string name="image">Картинка фильма</string>
+    <string name="year_label">Год:</string>
+    <string name="rating_label">Рейтинг:</string>
+
+
+
+</resources>
