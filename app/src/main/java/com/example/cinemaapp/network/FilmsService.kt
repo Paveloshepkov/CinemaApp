@@ -7,13 +7,3 @@ interface FilmsService {
     @GET("films.json")
     suspend fun getMovieList(): FilmsContainer
 }
-
-
-
-
-
-
-
-
-
-

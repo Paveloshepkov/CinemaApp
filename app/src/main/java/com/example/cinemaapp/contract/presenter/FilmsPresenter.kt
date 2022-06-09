@@ -11,7 +11,6 @@ import java.util.*
 
 class FilmsPresenter(view: Contract.View, model: Model) : Contract.Presenter {
 
-    private lateinit var allFilmsList: List<Film>
 
     private var view: Contract.View? = view
     private val filmsRepository: FilmsRepository = model.filmsRepository()
@@ -19,6 +18,7 @@ class FilmsPresenter(view: Contract.View, model: Model) : Contract.Presenter {
     private var _eventNetworkError = MutableLiveData(false)
     private val eventNetworkError: LiveData<Boolean> get() = _eventNetworkError
 
+    private lateinit var allFilmsList: List<Film>
     private var selectedFilmsList: MutableList<Film>? = LinkedList()
     private var genresList: MutableList<String>? = LinkedList()
     private var filmsFilterCheck = false
@@ -29,8 +29,9 @@ class FilmsPresenter(view: Contract.View, model: Model) : Contract.Presenter {
         try {
             filmsList = filmsRepository.loadFilmsFromRepo()
             if (!filmsList.isNullOrEmpty()) {
-                generatingListGenres(filmsList)
                 allFilmsList = filmsList
+                generatingListGenres(allFilmsList)
+                sortFilmList(allFilmsList)
             } else {
                 _eventNetworkError.value = true
             }
@@ -119,5 +120,34 @@ class FilmsPresenter(view: Contract.View, model: Model) : Contract.Presenter {
                 genresList?.add(buf)
         }
         return genresList as List<String>
+    }
+
+    private fun sortFilmList(filmsList: List<Film>): List<Film> {
+        val mSortedFilms: MutableList<Film> = LinkedList()
+        val allLocalizedName: MutableList<String> = LinkedList()
+        for (element in filmsList) {
+            allLocalizedName += element.localizedName.toString()
+        }
+        allLocalizedName.sort()
+        for(i in allLocalizedName) {
+            for (element in filmsList) {
+                if (element.localizedName == i) {
+                    mSortedFilms.add(
+                        Film(
+                            element.id,
+                            element.localizedName,
+                            element.name,
+                            element.year,
+                            element.rating,
+                            element.imageUrl,
+                            element.description,
+                            element.genres
+                        )
+                    )
+                }
+            }
+        }
+        allFilmsList = mSortedFilms
+        return allFilmsList
     }
 }
