@@ -43,7 +43,6 @@ class OverviewFragment : Fragment(), Contract.View {
 
         setPresenter(FilmsPresenter(this, ModelImpl()))
 
-        presenter.getDataFromInternet()
         presenter.setInternetErrorStatus()
 
         val gridLayoutManager = GridLayoutManager(context, 2)

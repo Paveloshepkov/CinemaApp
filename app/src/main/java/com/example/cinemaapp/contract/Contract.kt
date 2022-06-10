@@ -6,7 +6,6 @@ import com.example.cinemaapp.data.Film
 
 interface Contract {
     interface Presenter : BasePresenter {
-        fun getDataFromInternet()
         fun setInternetErrorStatus()
         fun setGenresList()
         fun setFilmsList()

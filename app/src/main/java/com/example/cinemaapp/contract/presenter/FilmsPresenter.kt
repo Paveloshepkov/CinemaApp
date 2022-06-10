@@ -24,7 +24,7 @@ class FilmsPresenter(view: Contract.View, model: Model) : Contract.Presenter {
     private var filmsFilterCheck = false
     private var filter: String = ""
 
-    override fun getDataFromInternet() {
+    init {
         val filmsList: List<Film>?
         try {
             filmsList = filmsRepository.loadFilmsFromRepo()
