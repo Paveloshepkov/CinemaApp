@@ -105,20 +105,17 @@ class FilmsPresenter(view: Contract.View, model: Model) : Contract.Presenter {
 
     private fun generatingListGenres(filmsList: List<Film>): List<String> = runBlocking {
 
-        var genresString: String? = ""
+        val sortingGenreList: MutableList<String> = LinkedList()
+
         for (element in filmsList) {
-            genresString += element.genres.toString()
-                .replace("[", " ")
-                .replace("]", " ")
-                .replace(",", " ")
-        }
-
-        val stringTokenizer = StringTokenizer(genresString, " ")
-
-        while (stringTokenizer.hasMoreTokens()) {
-            val buf = stringTokenizer.nextToken()
-            if (!genresList?.contains(buf)!!)
-                genresList?.add(buf)
+            for (i in element.genres){
+                sortingGenreList.add(i)
+                for (j in sortingGenreList){
+                    if(!genresList?.contains(j)!!){
+                        genresList?.add(j)
+                    }
+                }
+            }
         }
         return@runBlocking genresList as List<String>
     }
