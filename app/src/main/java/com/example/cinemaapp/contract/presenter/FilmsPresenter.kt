@@ -6,6 +6,7 @@ import com.example.cinemaapp.contract.Contract
 import com.example.cinemaapp.contract.model.Model
 import com.example.cinemaapp.data.Film
 import com.example.cinemaapp.repository.FilmsRepository
+import kotlinx.coroutines.runBlocking
 import java.util.*
 
 
@@ -102,7 +103,7 @@ class FilmsPresenter(view: Contract.View, model: Model) : Contract.Presenter {
         return selectedFilmsList as List<Film>
     }
 
-    private fun generatingListGenres(filmsList: List<Film>): List<String> {
+    private fun generatingListGenres(filmsList: List<Film>): List<String> = runBlocking {
 
         var genresString: String? = ""
         for (element in filmsList) {
@@ -119,10 +120,11 @@ class FilmsPresenter(view: Contract.View, model: Model) : Contract.Presenter {
             if (!genresList?.contains(buf)!!)
                 genresList?.add(buf)
         }
-        return genresList as List<String>
+        return@runBlocking genresList as List<String>
     }
 
-    private fun sortFilmList(filmsList: List<Film>): List<Film> {
+    private fun sortFilmList(filmsList: List<Film>): List<Film> = runBlocking {
+
         val mSortedFilms: MutableList<Film> = LinkedList()
         val allLocalizedName: MutableList<String> = LinkedList()
         for (element in filmsList) {
@@ -148,6 +150,6 @@ class FilmsPresenter(view: Contract.View, model: Model) : Contract.Presenter {
             }
         }
         allFilmsList = mSortedFilms
-        return allFilmsList
+        return@runBlocking allFilmsList
     }
 }
