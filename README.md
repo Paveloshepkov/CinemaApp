@@ -23,13 +23,13 @@
 
 ![image](https://user-images.githubusercontent.com/32362643/172830295-f2b2c4b3-7846-43a5-a405-5a757ba7b48b.png)
 
-# 2. Список фильмов.
+# 2. Отсортированный список фильмов.
 
-![image](https://user-images.githubusercontent.com/32362643/172830398-8a2a5b68-c51f-456d-8ca6-e2ec6b7c0ce1.png)
+![image](https://user-images.githubusercontent.com/32362643/172872345-175e11ac-e543-4da2-916a-ef2f0e747565.png)
 
 # 3. Отфильтрованные фильмы по выбранному жанру.
 
-![image](https://user-images.githubusercontent.com/32362643/172830436-1cdcfe32-a53f-494c-adc3-823c72f43823.png)
+![image](https://user-images.githubusercontent.com/32362643/172872370-625912ef-c150-4a70-970d-3cff068a31f1.png)
 
 # 4. Детальная информация о фильме.
 
