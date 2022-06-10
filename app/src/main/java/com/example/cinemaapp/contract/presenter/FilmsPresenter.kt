@@ -6,12 +6,11 @@ import com.example.cinemaapp.contract.Contract
 import com.example.cinemaapp.contract.model.Model
 import com.example.cinemaapp.data.Film
 import com.example.cinemaapp.repository.FilmsRepository
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import java.util.*
 
-
 class FilmsPresenter(view: Contract.View, model: Model) : Contract.Presenter {
-
 
     private var view: Contract.View? = view
     private val filmsRepository: FilmsRepository = model.filmsRepository()
@@ -31,8 +30,7 @@ class FilmsPresenter(view: Contract.View, model: Model) : Contract.Presenter {
             filmsList = filmsRepository.loadFilmsFromRepo()
             if (!filmsList.isNullOrEmpty()) {
                 allFilmsList = filmsList
-                generatingListGenres(allFilmsList)
-                sortFilmList(allFilmsList)
+                dataPreparation()
             } else {
                 _eventNetworkError.value = true
             }
@@ -77,6 +75,17 @@ class FilmsPresenter(view: Contract.View, model: Model) : Contract.Presenter {
         this.view = null
     }
 
+    private fun dataPreparation() = runBlocking {
+        launch {
+            generatingListGenres(allFilmsList)
+            sortFilmList(allFilmsList)
+        }
+    }
+
+    private fun setFilms() {
+        allFilmsList.let { view?.displayOnViewFilms(it) }
+    }
+
     private fun setSelectedFilms() {
         filmsFilter(filter)
         selectedFilmsList.let {
@@ -84,10 +93,6 @@ class FilmsPresenter(view: Contract.View, model: Model) : Contract.Presenter {
                 view?.displayOnViewFilms(it)
             }
         }
-    }
-
-    private fun setFilms() {
-        allFilmsList.let { view?.displayOnViewFilms(it) }
     }
 
     private fun filmsFilter(string: String): List<Film> {
@@ -103,24 +108,24 @@ class FilmsPresenter(view: Contract.View, model: Model) : Contract.Presenter {
         return selectedFilmsList as List<Film>
     }
 
-    private fun generatingListGenres(filmsList: List<Film>): List<String> = runBlocking {
+    private fun generatingListGenres(filmsList: List<Film>): List<String> {
 
         val sortingGenreList: MutableList<String> = LinkedList()
 
         for (element in filmsList) {
-            for (i in element.genres){
+            for (i in element.genres) {
                 sortingGenreList.add(i)
-                for (j in sortingGenreList){
-                    if(!genresList?.contains(j)!!){
+                for (j in sortingGenreList) {
+                    if (!genresList?.contains(j)!!) {
                         genresList?.add(j)
                     }
                 }
             }
         }
-        return@runBlocking genresList as List<String>
+        return genresList as List<String>
     }
 
-    private fun sortFilmList(filmsList: List<Film>): List<Film> = runBlocking {
+    private fun sortFilmList(filmsList: List<Film>): List<Film> {
 
         val mSortedFilms: MutableList<Film> = LinkedList()
         val allLocalizedName: MutableList<String> = LinkedList()
@@ -128,7 +133,7 @@ class FilmsPresenter(view: Contract.View, model: Model) : Contract.Presenter {
             allLocalizedName += element.localizedName.toString()
         }
         allLocalizedName.sort()
-        for(i in allLocalizedName) {
+        for (i in allLocalizedName) {
             for (element in filmsList) {
                 if (element.localizedName == i) {
                     mSortedFilms.add(
@@ -147,6 +152,6 @@ class FilmsPresenter(view: Contract.View, model: Model) : Contract.Presenter {
             }
         }
         allFilmsList = mSortedFilms
-        return@runBlocking allFilmsList
+        return allFilmsList
     }
 }
