@@ -28,12 +28,7 @@ class FilmsAdapter(private val filmList: List<Film>, private val mListener: Film
             } else {
                 binding.filmPhoto.load(R.drawable.ic_no_img)
             }
-            if (film.localizedName?.length!! < 27) {
-                binding.filmItemTitle.text = film.localizedName
-            } else {
-                val name = film.localizedName!!.substring(0, 27) + "..."
-                binding.filmItemTitle.text = name
-            }
+            binding.filmItemTitle.text = film.localizedName
         }
     }
 
