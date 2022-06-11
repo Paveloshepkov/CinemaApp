@@ -1,58 +1,51 @@
 package com.example.cinemaapp.contract.presenter
 
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
 import com.example.cinemaapp.contract.Contract
 import com.example.cinemaapp.contract.model.Model
 import com.example.cinemaapp.data.Film
 import com.example.cinemaapp.repository.FilmsRepository
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
-import java.util.*
 
 class FilmsPresenter(view: Contract.View, model: Model) : Contract.Presenter {
 
-    private var view: Contract.View? = view
     private val filmsRepository: FilmsRepository = model.filmsRepository()
+    private var view: Contract.View? = view
 
-    private var _eventNetworkError = MutableLiveData(false)
-    private val eventNetworkError: LiveData<Boolean> get() = _eventNetworkError
-
-    private lateinit var allFilmsList: List<Film>
-    private var selectedFilmsList: MutableList<Film>? = LinkedList()
-    private var genresList: MutableList<String>? = LinkedList()
+    private var allFilmsList: List<Film> = listOf()
+    private var selectedFilmsList: MutableList<Film>? = mutableListOf()
+    private var genresList: MutableList<String>? = mutableListOf()
+    private var eventNetworkError = false
     private var filmsFilterCheck = false
     private var filter: String = ""
 
     init {
-        val filmsList: List<Film>?
         try {
-            filmsList = filmsRepository.loadFilmsFromRepo()
-            if (!filmsList.isNullOrEmpty()) {
-                allFilmsList = filmsList
+            allFilmsList = filmsRepository.loadFilmsFromRepo()
+            if (!allFilmsList.isNullOrEmpty()) {
                 dataPreparation()
             } else {
-                _eventNetworkError.value = true
+                eventNetworkError = true
             }
         } catch (e: Exception) {
-            _eventNetworkError.value = true
+            eventNetworkError = true
         }
     }
 
     override fun setInternetErrorStatus() {
-        if (eventNetworkError.value == true) {
+        if (eventNetworkError) {
             view?.displayError()
         }
     }
 
     override fun setGenresList() {
-        if (!eventNetworkError.value!!) {
+        if (!eventNetworkError) {
             genresList?.let { view?.displayOnViewGenres(it) }
         }
     }
 
     override fun setFilmsList() {
-        if (!eventNetworkError.value!!) {
+        if (!eventNetworkError) {
             if (filmsFilterCheck) {
                 setSelectedFilms()
             } else {
@@ -96,21 +89,21 @@ class FilmsPresenter(view: Contract.View, model: Model) : Contract.Presenter {
     }
 
     private fun filmsFilter(string: String): List<Film> {
-        selectedFilmsList = LinkedList()
+        selectedFilmsList = mutableListOf()
         for (element in allFilmsList) {
             if (element.genres.any { it == string }) {
                 selectedFilmsList?.add(element)
             }
         }
         if (string == "") {
-            selectedFilmsList = LinkedList()
+            selectedFilmsList = mutableListOf()
         }
         return selectedFilmsList as List<Film>
     }
 
     private fun generatingListGenres(filmsList: List<Film>): List<String> {
 
-        val sortingGenreList: MutableList<String> = LinkedList()
+        val sortingGenreList: MutableList<String> = mutableListOf()
 
         for (element in filmsList) {
             for (i in element.genres) {
@@ -127,8 +120,8 @@ class FilmsPresenter(view: Contract.View, model: Model) : Contract.Presenter {
 
     private fun sortFilmList(filmsList: List<Film>): List<Film> {
 
-        val mSortedFilms: MutableList<Film> = LinkedList()
-        val allLocalizedName: MutableList<String> = LinkedList()
+        val mSortedFilms: MutableList<Film> = mutableListOf()
+        val allLocalizedName: MutableList<String> = mutableListOf()
         for (element in filmsList) {
             allLocalizedName += element.localizedName.toString()
         }
