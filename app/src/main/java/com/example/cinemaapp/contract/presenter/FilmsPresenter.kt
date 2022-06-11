@@ -24,8 +24,6 @@ class FilmsPresenter(view: Contract.View, model: Model) : Contract.Presenter {
             allFilmsList = filmsRepository.loadFilmsFromRepo()
             if (!allFilmsList.isNullOrEmpty()) {
                 dataPreparation()
-            } else {
-                eventNetworkError = true
             }
         } catch (e: Exception) {
             eventNetworkError = true
