@@ -42,9 +42,7 @@ class FilmsPresenter(view: Contract.View, model: Model) : Contract.Presenter {
     }
 
     override fun setGenresList() {
-        if (!eventNetworkError) {
-            genresList?.let { view?.displayOnViewGenres(it) }
-        }
+        if (!eventNetworkError) genresList?.let { view?.displayOnViewGenres(it) }
     }
 
     override fun setFilmsList() {
