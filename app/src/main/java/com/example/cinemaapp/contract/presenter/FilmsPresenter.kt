@@ -13,27 +13,32 @@ class FilmsPresenter(view: Contract.View, model: Model) : Contract.Presenter {
     private var view: Contract.View? = view
 
     private var allFilmsList: List<Film> = listOf()
+
     private var selectedFilmsList: MutableList<Film>? = mutableListOf()
     private var genresList: MutableList<String>? = mutableListOf()
+
     private var eventNetworkError = false
     private var filmsFilterCheck = false
+
     private var filter: String = ""
 
     init {
+        getDataFromRepo()
+    }
+
+    private fun getDataFromRepo() = runBlocking {
         try {
             allFilmsList = filmsRepository.loadFilmsFromRepo()
-            if (!allFilmsList.isNullOrEmpty()) {
-                dataPreparation()
-            }
+
+            if (!allFilmsList.isNullOrEmpty()) dataPreparation()
+
         } catch (e: Exception) {
             eventNetworkError = true
         }
     }
 
     override fun setInternetErrorStatus() {
-        if (eventNetworkError) {
-            view?.displayError()
-        }
+        if (eventNetworkError) view?.displayError()
     }
 
     override fun setGenresList() {
@@ -44,11 +49,7 @@ class FilmsPresenter(view: Contract.View, model: Model) : Contract.Presenter {
 
     override fun setFilmsList() {
         if (!eventNetworkError) {
-            if (filmsFilterCheck) {
-                setSelectedFilms()
-            } else {
-                setFilms()
-            }
+            if (filmsFilterCheck) setSelectedFilms() else setFilms()
         }
     }
 
@@ -80,9 +81,7 @@ class FilmsPresenter(view: Contract.View, model: Model) : Contract.Presenter {
     private fun setSelectedFilms() {
         filmsFilter(filter)
         selectedFilmsList.let {
-            if (it != null) {
-                view?.displayOnViewFilms(it)
-            }
+            if (it != null) view?.displayOnViewFilms(it)
         }
     }
 
@@ -93,9 +92,8 @@ class FilmsPresenter(view: Contract.View, model: Model) : Contract.Presenter {
                 selectedFilmsList?.add(element)
             }
         }
-        if (string == "") {
-            selectedFilmsList = mutableListOf()
-        }
+        if (string == "") selectedFilmsList = mutableListOf()
+
         return selectedFilmsList as List<Film>
     }
 
@@ -118,16 +116,17 @@ class FilmsPresenter(view: Contract.View, model: Model) : Contract.Presenter {
 
     private fun sortFilmList(filmsList: List<Film>): List<Film> {
 
-        val mSortedFilms: MutableList<Film> = mutableListOf()
-        val allLocalizedName: MutableList<String> = mutableListOf()
+        val allNames: MutableList<String> = mutableListOf()
+        val sortedFilms: MutableList<Film> = mutableListOf()
+
         for (element in filmsList) {
-            allLocalizedName += element.localizedName.toString()
+            allNames += element.localizedName.toString()
         }
-        allLocalizedName.sort()
-        for (i in allLocalizedName) {
+        allNames.sort()
+        for (i in allNames) {
             for (element in filmsList) {
                 if (element.localizedName == i) {
-                    mSortedFilms.add(
+                    sortedFilms.add(
                         Film(
                             element.id,
                             element.localizedName,
@@ -142,7 +141,6 @@ class FilmsPresenter(view: Contract.View, model: Model) : Contract.Presenter {
                 }
             }
         }
-        allFilmsList = mSortedFilms
-        return allFilmsList
+        return sortedFilms
     }
 }
