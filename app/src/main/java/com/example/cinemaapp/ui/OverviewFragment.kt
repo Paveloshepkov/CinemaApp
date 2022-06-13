@@ -1,5 +1,6 @@
 package com.example.cinemaapp.ui
 
+import android.annotation.SuppressLint
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -12,15 +13,22 @@ import androidx.recyclerview.widget.ConcatAdapter
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.GridLayoutManager.SpanSizeLookup
 import com.example.cinemaapp.R
+import com.example.cinemaapp.adapters.Item
+import com.example.cinemaapp.adapters.CustomAdapter
+import com.example.cinemaapp.adapters.decorations.GroupCardItemDecoration
+import com.example.cinemaapp.adapters.decorations.GroupHorizontalItemDecoration
+import com.example.cinemaapp.adapters.decorations.GroupVerticalItemDecoration
+import com.example.cinemaapp.adapters.custom.FilmAdapter
+import com.example.cinemaapp.adapters.custom.GenreAdapter
+import com.example.cinemaapp.adapters.custom.TitleAdapter
 import com.example.cinemaapp.contract.Contract
 import com.example.cinemaapp.contract.model.ModelImpl
 import com.example.cinemaapp.contract.presenter.FilmsPresenter
-import com.example.cinemaapp.data.Film
 import com.example.cinemaapp.databinding.FragmentOverviewBinding
-import com.example.cinemaapp.ui.adapters.FilmsAdapter
-import com.example.cinemaapp.ui.adapters.GenresAdapter
-import com.example.cinemaapp.ui.adapters.LabelFilmsAdapter
-import com.example.cinemaapp.ui.adapters.LabelGenresAdapter
+import com.example.cinemaapp.models.Film
+import com.example.cinemaapp.models.Genre
+import com.example.cinemaapp.models.Title
+import com.example.cinemaapp.util.asSerializable
 
 class OverviewFragment : Fragment(), Contract.View {
 
@@ -30,9 +38,24 @@ class OverviewFragment : Fragment(), Contract.View {
     private val binding
         get() = _binding!!
 
-    private var mGenresAdapter: GenresAdapter? = null
-    private var mFilmsAdapter: FilmsAdapter? = null
+    private val genreTittle: MutableList<Item> by lazy {
+        MutableList(1) { Title("Жанры") }
+    }
+
+    private val filmsTittle: MutableList<Item> by lazy {
+        MutableList(1) { Title("Фильмы") }
+    }
+
     private var genresListSize: Int = 0
+
+    private lateinit var genreList: MutableList<Genre>
+    private lateinit var filmList: MutableList<Film>
+
+    private val genreTitleAdapter = CustomAdapter(listOf(TitleAdapter()))
+    private val filmTitleAdapter = CustomAdapter(listOf(TitleAdapter()))
+
+    private var genreAdapter = CustomAdapter(listOf(GenreAdapter(::onFilterClick)))
+    private var filmAdapter = CustomAdapter(listOf(FilmAdapter(::onFilmClick)))
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -52,21 +75,47 @@ class OverviewFragment : Fragment(), Contract.View {
                     return if (position > genresListSize + 1) 1 else 2
                 }
             }
-        binding.recyclerview.layoutManager = gridLayoutManager
+
+        with(binding.recyclerview) {
+            layoutManager = gridLayoutManager
+            addItemDecoration(GroupVerticalItemDecoration(R.layout.item_title, 8, 16))
+            addItemDecoration(GroupHorizontalItemDecoration(R.layout.item_title, 32))
+            addItemDecoration(GroupHorizontalItemDecoration(R.layout.item_genre, 32))
+            addItemDecoration(GroupCardItemDecoration(R.layout.item_film, 130, 16, 8))
+        }
+
         presenter.setGenresList()
         presenter.setFilmsList()
+
+        binding.recyclerview.adapter = ConcatAdapter(
+            ConcatAdapter.Config.Builder()
+                .setIsolateViewTypes(false)
+                .build(),
+            genreTitleAdapter,
+            genreAdapter,
+            filmTitleAdapter,
+            filmAdapter
+        )
+
         return binding.root
     }
 
-    override fun displayOnViewGenres(genresList: List<String>) {
+    override fun displayOnViewGenres(genresList: MutableList<Genre>) {
+
+        genreList = genresList
         genresListSize = genresList.size
-        mGenresAdapter = GenresAdapter(genresList, GenreItemClickListener())
+
+        genreTitleAdapter.submitList(genreTittle.toList())
+        genreAdapter.submitList(genresList.toList())
     }
 
-    override fun displayOnViewFilms(filmsList: List<Film>) {
-        mFilmsAdapter = FilmsAdapter(filmsList, FilmItemClickListener())
-        binding.recyclerview.adapter =
-            ConcatAdapter(LabelGenresAdapter(), mGenresAdapter, LabelFilmsAdapter(), mFilmsAdapter)
+    override fun displayOnViewFilms(filmsList: MutableList<Film>) {
+
+        filmList = filmsList
+
+        filmTitleAdapter.submitList(filmsTittle.toList())
+        filmAdapter.submitList(filmsList.toList())
+
     }
 
     override fun displayError() {
@@ -77,30 +126,37 @@ class OverviewFragment : Fragment(), Contract.View {
         this.presenter = presenter
     }
 
-    private inner class GenreItemClickListener : GenresAdapter.GenreAdapterListener {
-        private var checkString = ""
-        override fun onGenreClick(genre: String) {
-            checkString =
-                if (checkString != genre) {
-                    presenter.setFilter(genre)
-                    genre
-                } else {
-                    presenter.removeFilter()
-                    ""
-                }
-            presenter.setFilmsList()
-        }
+    @SuppressLint("NotifyDataSetChanged")
+    private fun onFilterClick(genre: Genre) {
+        if (genre.isFilter) {
 
-        override fun isGenreWasClicked(): String {
-            return checkString
+            val genreIndex = genreList.indexOf(genre)
+            val newItem = genre.copy(isFilter = genre.isFilter.not())
+
+            genreList.removeAt(genreIndex)
+            genreList.add(genreIndex, newItem)
+            presenter.removeFilter()
+            presenter.setFilmsList()
+            genreAdapter.submitList(genreList.toList())
+            genreAdapter.notifyDataSetChanged()
+        } else {
+
+            val genreIndex = genreList.indexOf(genre)
+            val newItem = genre.copy(isFilter = genre.isFilter.not())
+
+            genreList.removeAt(genreIndex)
+            genreList.add(genreIndex, newItem)
+            presenter.getFilter(newItem)
+            genreList = presenter.setCheckedList()
+            genreAdapter.submitList(genreList.toList())
+            presenter.setFilmsList()
+            genreAdapter.notifyDataSetChanged()
         }
     }
 
-    private inner class FilmItemClickListener : FilmsAdapter.FilmsAdapterListener {
-        override fun onFilmClick(film: Film) {
-            val bundle = bundleOf("film" to film)
-            this@OverviewFragment.findNavController()
-                .navigate(R.id.action_overviewFragment_to_filmDetailFragment, bundle)
-        }
+    private fun onFilmClick(film: Film) {
+        val bundle = bundleOf("film" to film.asSerializable())
+        this@OverviewFragment.findNavController()
+            .navigate(R.id.action_overviewFragment_to_filmDetailFragment, bundle)
     }
 }

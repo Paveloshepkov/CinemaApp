@@ -9,8 +9,8 @@ import androidx.core.net.toUri
 import androidx.core.view.isGone
 import androidx.fragment.app.Fragment
 import coil.load
-import com.example.cinemaapp.data.Film
 import com.example.cinemaapp.databinding.FragmentFilmDetailBinding
+import com.example.cinemaapp.models.FilmDetail
 
 class FilmDetailFragment : Fragment() {
 
@@ -24,7 +24,7 @@ class FilmDetailFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View {
         _binding = FragmentFilmDetailBinding.inflate(inflater, container, false)
-        val film: Film = arguments?.getSerializable("film") as Film
+        val film: FilmDetail = arguments?.getSerializable("film") as FilmDetail
         (requireActivity() as AppCompatActivity).supportActionBar?.title = film.localizedName
         binding.apply {
             if (film.imageUrl != null) {
